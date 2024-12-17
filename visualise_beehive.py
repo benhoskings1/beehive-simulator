@@ -14,7 +14,7 @@ if __name__ == "__main__":
     window = pg.display.set_mode((800, 600))
     beehive_display = BeehiveDisplay(display_size=window.get_size())
 
-    beehive = Beehive(10,)
+    beehive = Beehive(100,)
 
     window.blit(beehive_display.get_surface(), (0, 0))
     pg.display.flip()
