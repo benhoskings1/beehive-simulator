@@ -49,13 +49,26 @@ class BeeMachine(StateMachine):
         | flying.to(gathering)
         | gathering.to(unloading)
         | unloading.to(sleeping)
-        | sleeping.to(dead)
-
     )
+
+    bee_death = (
+        sleeping.to(dead)
+        | flying.to(dead)
+        | gathering.to(dead)
+        | unloading.to(dead)
+    )
+
+    def __init__(self):
+        self.age = 0
+        self.activity_time = 0
+        super(BeeMachine, self).__init__()
 
     def before_cycle(self, event: str, source: State, target: State, message: str = ""):
         message = ". " + message if message else ""
         return f"Running {event} from {source.id} to {target.id}{message}"
+
+    def after_cycle(self):
+        self.age += 1
 
     def on_enter_dead(self):
         print("The bee died")
@@ -65,6 +78,8 @@ if __name__ == "__main__":
     bm = BeeMachine()
 
     for i in range(5):
-        bm.send("cycle")
-    print(bm.current_state)
+        bm.cycle()
+
+    bm.send("bee_death")
+    print(bm.age)
 
