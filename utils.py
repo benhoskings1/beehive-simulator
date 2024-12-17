@@ -3,12 +3,15 @@ activities = [
     "Sleeping",
     "Flying",
     "Gathering",
-    "Flying",
     "Unloading"
 ]
 
 activity_cycle = {
-    idx: name for idx, name in enumerate(activities)
+    0: "Sleeping",
+    1: "Flying",
+    2: "Gathering",
+    3: "Flying",
+    4: "Unloading",
 }
 
 activity_times = {
