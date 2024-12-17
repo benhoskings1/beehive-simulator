@@ -12,9 +12,9 @@ if __name__ == "__main__":
 
     pg.init()
     window = pg.display.set_mode((800, 600))
-    beehive_display = BeehiveDisplay()
+    beehive_display = BeehiveDisplay(display_size=window.get_size())
 
-    beehive = Beehive(count=10, start_state=0)
+    beehive = Beehive(10,)
 
     window.blit(beehive_display.get_surface(), (0, 0))
     pg.display.flip()
@@ -23,4 +23,9 @@ if __name__ == "__main__":
     while True:
         beehive.process_iteration()
         print(beehive.activity_counts)
+
+        beehive_display.render_hive(beehive.activity_counts)
+        window.blit(beehive_display.get_surface(), (0, 0))
+        pg.display.flip()
+        pg.event.pump()
         time.sleep(0.1)

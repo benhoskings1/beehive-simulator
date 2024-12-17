@@ -1,7 +1,8 @@
 import math
+from utils import vec
 
 
-def get_coordinates(sides, radius):
+def get_coordinates(sides, radius, offset=vec(0, 0)):
     angles = []
     coordinates = []
     count = 0
@@ -12,7 +13,7 @@ def get_coordinates(sides, radius):
         count += 1
 
     for angle in angles:
-        coordinate = (radius*(1 + math.sin(angle)), radius * (1 - math.cos(angle)))
+        coordinate = vec(radius*(1 + math.sin(angle)), radius * (1 - math.cos(angle))) + offset
         coordinates.append(coordinate)
 
     return coordinates

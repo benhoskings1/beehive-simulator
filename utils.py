@@ -1,3 +1,4 @@
+import pygame as pg
 activities = [
     "Sleeping",
     "Flying",
@@ -16,3 +17,5 @@ activity_times = {
     "Flying": 10,
     "Unloading": 10
 }
+
+vec = pg.Vector2
