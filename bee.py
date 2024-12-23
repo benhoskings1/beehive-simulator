@@ -2,7 +2,9 @@ import random
 from utils import *
 import time
 
+from enum import Enum
 from statemachine import StateMachine, State
+from statemachine.states import States
 
 
 class Bee:
@@ -38,48 +40,61 @@ class Bee:
 
 
 class BeeMachine(StateMachine):
-    sleeping = State(initial=True, name="Sleeping", value=0)
-    flying = State(name="Flying", value=1)
-    gathering = State(name="Gathering", value=2)
-    unloading = State(name="Unloading", value=3)
-    dead = State(final=True, name="Dead", value=4)
+
+    states = States.from_enum(
+        BeeStates,
+        initial=BeeStates.birth,
+        final=BeeStates.dead,
+        use_enum_instance=True,
+    )
+
+    # sleeping = State(initial=True, name="Sleeping", value=0)
+    # flying = State(name="Flying", value=1)
+    # gathering = State(name="Gathering", value=2)
+    # unloading = State(name="Unloading", value=3)
+    # dead = State(final=True, name="Dead", value=4)
 
     cycle = (
-        sleeping.to(flying)
-        | flying.to(gathering)
-        | gathering.to(unloading)
-        | unloading.to(sleeping)
+        states.birth.to(states.flying)
+        | states.sleeping.to(states.flying)
+        | states.flying.to(states.gathering, cond="gathering_transition")
+        | states.gathering.to(states.flying)
+        | states.flying.to(states.unloading)
+        | states.unloading.to(states.sleeping)
     )
 
     bee_death = (
-        sleeping.to(dead)
-        | flying.to(dead)
-        | gathering.to(dead)
-        | unloading.to(dead)
+        states.sleeping.to(states.dead, )
+        | states.flying.to(states.dead)
+        | states.gathering.to(states.dead)
+        | states.unloading.to(states.dead)
     )
 
-    def __init__(self):
-        self.age = 0
-        self.activity_time = 0
+    def __init__(self, bee_id):
+        self.bee_id = bee_id
+        self.prev_state = None
         super(BeeMachine, self).__init__()
 
-    def before_cycle(self, event: str, source: State, target: State, message: str = ""):
-        message = ". " + message if message else ""
-        return f"Running {event} from {source.id} to {target.id}{message}"
+    def before_cycle(self, source: State, target: State):
+        self.prev_state = source
+        # print(f"Cycling Bee: {self.bee_id} from {source.id} to {target.id}")
+        return source.value, target.value
 
-    def after_cycle(self):
-        self.age += 1
+    def gathering_transition(self):
+        return self.prev_state.value is not BeeStates.gathering
+
+    def before_dead(self, target: State):
+        return target.value.value
 
     def on_enter_dead(self):
         print("The bee died")
 
 
 if __name__ == "__main__":
-    bm = BeeMachine()
+    bm = BeeMachine(bee_id=101)
 
     for i in range(5):
-        bm.cycle()
+        print(bm.cycle())
 
     bm.send("bee_death")
-    print(bm.age)
 

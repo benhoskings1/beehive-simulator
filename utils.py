@@ -1,4 +1,7 @@
+from enum import Enum
 import pygame as pg
+import random
+
 activities = [
     "Sleeping",
     "Flying",
@@ -22,3 +25,18 @@ activity_times = {
 }
 
 vec = pg.Vector2
+
+
+class BeeStates(Enum):
+    dead = 0
+    birth = 1
+    sleeping = 2
+    flying = 3
+    gathering = 4
+    unloading = 5
+
+
+def change_opacity(colour, alpha):
+    col = list(colour)
+    col[3] = int(alpha)
+    return pg.Color(col)
