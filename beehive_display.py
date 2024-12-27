@@ -47,7 +47,7 @@ class GameObjects(pg.sprite.Group):
     def draw(self, surf: pg.Surface, bgsurf=None, special_flags: int = 0):
         for obj in self.sprites():
             if obj.object_type == "transition_line":
-                if obj.age < 10:
+                if obj.age < 5:
                     surf.blit(obj.image, obj.rect.topleft)
                 else:
                     self.remove(obj)
@@ -59,9 +59,9 @@ class GameObjects(pg.sprite.Group):
 
 
 class BeehiveDisplay(Screen):
-    def __init__(self, size):
+    def __init__(self, size, bee_count):
         super().__init__(size, colour=Colours.white)
-        self.hive_radius = 180
+        self.hive_radius = min(size[0], size[1]) * 0.4
         self.hive_offset = vec((self.size.x - 2 * self.hive_radius) / 2,
                                (self.size.y - 2 * self.hive_radius) / 2)
         self.hive_coords = get_coordinates(sides=len(BeeStates), radius=self.hive_radius, offset=self.hive_offset)
@@ -70,6 +70,8 @@ class BeehiveDisplay(Screen):
 
         self.sprites = GameObjects([])
 
+        self.bee_count = bee_count
+
     def render_hive(self, activity_count):
         self.refresh()
         for activity, count in activity_count.items():
@@ -77,7 +79,7 @@ class BeehiveDisplay(Screen):
                 self.surface,
                 Colours.black.value,
                 self.activity_coords[activity],
-                radius=count/10
+                radius=100 * count/self.bee_count,
             )
 
     def add_new_transition(self, start_state: BeeStates, end_state: BeeStates):

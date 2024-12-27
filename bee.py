@@ -7,52 +7,14 @@ from statemachine import StateMachine, State
 from statemachine.states import States
 
 
-class Bee:
-    def __init__(self, state=None):
-        if state:
-            self.activity_id = state
-        else:
-            self.activity_id = random.choice(list(activity_cycle.keys()))
-
-        self.activity_prev = None
-        self.activity_time = 0
-        self.age = 0
-
-    def process_iteration(self):
-        changed = False
-        pre_activity = self.activity_id
-        if self.activity_time + random.randint(-5, 5) > activity_times[activity_cycle[self.activity_id]]:
-            self.activity_id = (self.activity_id + 1) % len(activity_cycle)
-            self.activity_time = 0
-            changed = True
-
-        self.activity_time += 1
-        self.age += 1
-
-        if changed:
-            # self.print_status()
-            return pre_activity, self.activity_id
-
-    def print_status(self):
-        print(f"Old Activity: {activity_cycle[self.activity_id]} (ID {(self.activity_id - 1) % len(activity_cycle)})\n"
-              f"New Activity: {activity_cycle[self.activity_id]} (ID {self.activity_id})\n"
-              f"Time: {self.activity_time}")
-
-
 class BeeMachine(StateMachine):
 
     states = States.from_enum(
         BeeStates,
-        initial=BeeStates.birth,
+        initial=BeeStates.initialise,
         final=BeeStates.dead,
         use_enum_instance=True,
     )
-
-    # sleeping = State(initial=True, name="Sleeping", value=0)
-    # flying = State(name="Flying", value=1)
-    # gathering = State(name="Gathering", value=2)
-    # unloading = State(name="Unloading", value=3)
-    # dead = State(final=True, name="Dead", value=4)
 
     cycle = (
         states.birth.to(states.flying)
@@ -70,15 +32,41 @@ class BeeMachine(StateMachine):
         | states.unloading.to(states.dead)
     )
 
-    def __init__(self, bee_id):
+    # dead = 0
+    # birth = 1
+    # sleeping = 2
+    # flying = 3
+    # gathering = 4
+    # unloading = 5
+
+    initialise = (
+        states.initialise.to(states.dead, cond="initialise_transition") |
+        states.initialise.to(states.birth, cond="initialise_transition") |
+        states.initialise.to(states.sleeping, cond="initialise_transition") |
+        states.initialise.to(states.flying, cond="initialise_transition") |
+        states.initialise.to(states.gathering, cond="initialise_transition") |
+        states.initialise.to(states.unloading, cond="initialise_transition")
+    )
+
+    def __init__(self, bee_id, start_state=BeeStates.birth):
         self.bee_id = bee_id
         self.prev_state = None
+        self.idx_holder = 0
         super(BeeMachine, self).__init__()
+        self.initialise(start_state)
+        self.prev_state = start_state
+        # print(self.current_state)
 
     def before_cycle(self, source: State, target: State):
         self.prev_state = source
         # print(f"Cycling Bee: {self.bee_id} from {source.id} to {target.id}")
         return source.value, target.value
+
+    def initialise_transition(self, target_state):
+        init_state = self.idx_holder == target_state.value
+        if not init_state:
+            self.idx_holder += 1
+        return init_state
 
     def gathering_transition(self):
         return self.prev_state.value is not BeeStates.gathering
@@ -91,7 +79,9 @@ class BeeMachine(StateMachine):
 
 
 if __name__ == "__main__":
-    bm = BeeMachine(bee_id=101)
+    bm = BeeMachine(bee_id=101, start_state=BeeStates.birth)
+    img_path = "docs/images/readme_bee_machine.png"
+    bm._graph().write_png(img_path)
 
     for i in range(5):
         print(bm.cycle())

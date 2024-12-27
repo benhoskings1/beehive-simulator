@@ -2,12 +2,15 @@ from enum import Enum
 import pygame as pg
 import random
 
-activities = [
-    "Sleeping",
-    "Flying",
-    "Gathering",
-    "Unloading"
-]
+
+class BeeStates(Enum):
+    initialise = 100
+    dead = 0
+    birth = 1
+    sleeping = 2
+    flying = 3
+    gathering = 4
+    unloading = 5
 
 activity_cycle = {
     0: "Sleeping",
@@ -18,22 +21,17 @@ activity_cycle = {
 }
 
 activity_times = {
-    "Sleeping": 10,
-    "Gathering": 20,
-    "Flying": 10,
-    "Unloading": 10
+    BeeStates.sleeping: 10,
+    BeeStates.gathering: 20,
+    BeeStates.birth: 10,
+    BeeStates.flying: 20,
+    BeeStates.unloading: 10,
 }
 
 vec = pg.Vector2
 
 
-class BeeStates(Enum):
-    dead = 0
-    birth = 1
-    sleeping = 2
-    flying = 3
-    gathering = 4
-    unloading = 5
+
 
 
 def change_opacity(colour, alpha):
